@@ -1,8 +1,0 @@
-numpy==1.25.2
-pandas==2.03
-streamlit==1.25.0
-scipy==1.11.1
-plotly==5.15.0
-plotly-express==0.4.1
-patsy==0.5.3
-statsmodels==0.14.0
