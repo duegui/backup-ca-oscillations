@@ -5,45 +5,34 @@ import plotly.graph_objects as go
 import numpy as np
 
 @st.cache_data
-def metadata(filepath):
+def importing(filepath, nrcolumns):
+    # Generate column names
+    column_names = [i for i in range(nrcolumns)]
 
-    # Importing metadata
-    metadata = pd.read_csv(filepath, delimiter='\t', nrows=6, header=None, index_col=1)
-    metadata = metadata.drop(columns=[0])
-    metadata = metadata[2].to_dict()
+    alldata = pd.read_csv(filepath, header=None, delimiter='\t', names=column_names)
 
-    acquisition_date = pd.to_datetime(metadata['Date :'])
-    acquisition_time = pd.to_timedelta(metadata['Time :'])
+    # Metadata
+    summary_metadata = {'File_name': (alldata.iloc[0, 2]).split("\\")[-1], 'Data_type': alldata.iloc[8, 2],
+                        'Acquisition_date': pd.to_datetime(alldata.iloc[2, 2]),
+                        'Acquisition_time': pd.to_timedelta(alldata.iloc[3, 2]),
+                        'Marker': pd.to_timedelta(alldata.iloc[5, 2])}
+    summary_metadata['Marker_int'] = summary_metadata['Marker'] / pd.Timedelta(minutes=1)
 
-    marker = pd.to_timedelta(metadata['Marker1 :'])
-    markerint = marker / pd.Timedelta(minutes=1)
-    metadata['Injection_marker'] = markerint
+    # Rawdata
+    df = alldata.drop([0, 1, 2, 3, 4, 5, 7, 8, 9])
+    del df[df.columns[0]]
+    columns_header = list(df.iloc[0])
+    prerawdata = pd.DataFrame(df.values[1:], columns=columns_header)
 
-    # summary_metadata['File name'] = filepath.split("\\")[-1]
-    summary_metadata = {}
-    summary_metadata['all metadata'] = metadata
-    summary_metadata['Acquisition date'] = acquisition_date
-    summary_metadata['Acquisition time'] = acquisition_time
-    summary_metadata['Time of application'] = metadata['Injection_marker']
-
-    return summary_metadata
-
-
-@st.cache_data
-def rawdata(filepath):
-
-    # Importing raw data
-
-    first_rawdata = pd.read_csv(filepath, delimiter='\t', skiprows=[0, 1, 2, 3, 4, 5, 6, 8, 9, 10])
-    rawdata = first_rawdata.copy()
-    rawdata = rawdata.drop(['Unnamed: 0'], axis=1)
+    rawdata = prerawdata.astype(float)
+    rawdata = prerawdata.astype(float)
     rawdata['Time[min]'] = rawdata['No.'] / 1000 * (1 / 60)
     rawdata.rename(columns={'No.': 'Time[ms]'}, inplace=True)
     list_of_wells = list(rawdata)[1:-1]
 
     rawdata_dict = {"rawdata": rawdata, "wells": list_of_wells}
 
-    return rawdata_dict
+    return summary_metadata, rawdata_dict
 
 @st.cache_data
 def all_plotting(rawdata,threshold):
@@ -105,7 +94,7 @@ def well_plot(analysiswell,rawdata,threshold,summary_metadata):
                    labels={"Time[min]_int": "Time (minutes)", analysiswell: "Ratio"})
     fig2.update_xaxes(rangeslider_visible=True)
 
-    fig2.add_vline(x=summary_metadata['Time of application'], line_width=3, line_dash="dash", line_color="green")
+    fig2.add_vline(x=summary_metadata['Marker_int'], line_width=3, line_dash="dash", line_color="green")
 
     from scipy.signal import find_peaks
 
