@@ -63,11 +63,7 @@ else:
     image = Image.open('settings.png')
 
     st.image(image)
-    st.sidebar.write('\n')
-    st.sidebar.subheader('Important: due to an unsolved bug, the first attempt for uploading a file will not be successful. '
-                         'You must try a second time and upload the same file for proper data parsing.')
-    st.sidebar.write('\n')
-    st.sidebar.write('\n')
+
     st.sidebar.write('\n')
     st.sidebar.write('\n')
 
