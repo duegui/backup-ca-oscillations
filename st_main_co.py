@@ -4,7 +4,7 @@ import streamlit as st
 import numpy as np
 import time
 import pandas as pd
-import scipy
+# import scipy
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
