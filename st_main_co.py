@@ -57,8 +57,8 @@ if filepath:
         st.subheader('Defined layers')
 
 else:
-    st.title('To start, select a valid TTX file')
-    st.subheader("To exporting a valid TTX file from the FDSS Hamamatsu software, make sure to comply with the following settings:")
+    st.title('To start, select a valid TXT file')
+    st.subheader("To exporting a valid TXT file from the FDSS Hamamatsu software, make sure to comply with the following settings:")
 
     image = Image.open('settings.png')
 
