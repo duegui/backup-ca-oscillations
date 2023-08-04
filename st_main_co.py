@@ -3,40 +3,19 @@ import all_functions as af
 from PIL import Image
 
 st.set_page_config(page_title="Calcium oscillations analysis tool", layout="wide")
-
 st.sidebar.subheader('File upload')
 number_of_wells = st.sidebar.radio("Plate size", [96, 384], disabled=True, horizontal=True)
-st.sidebar.write('Currently, analysis is only possible on 96-well plates')
-st.sidebar.write('\n')
 filepath = st.sidebar.file_uploader('Please upload a valid TTX file')
 
-# The app works only when a valid data file has been uploaded. Otherwise, a message comes indicating
-# how to upload a valid TXT file.
-if filepath is None:
-    st.title('To start, select a valid TXT file')
-    st.subheader(
-        "To export a valid TXT file from the FDSS Hamamatsu software, make sure to comply with the following settings:")
-
-    image = Image.open('settings.png')
-    st.image(image)
-    st.sidebar.write('\n')
-    st.sidebar.write('\n')
-    st.sidebar.subheader("Clear all Cache Data before analysing a new file")
-    if st.sidebar.button("Clear All Cache Data"):
-        # Clear values from *all* all in-memory and on-disk data caches:
-        st.cache_data.clear()
-        st.sidebar.write('Cache has been cleared')
-
-else:
+if filepath:
     # Selecting parameters
     if number_of_wells == 96:
         nrcolumns = 98
     else:
         nrcolumns = 386
-    # nrcolumns will be main factor defining the behaviour of the app. Data will be visualized different
-    # for 384 well plates.
 
-    summary_metadata, rawdata = af.importing(filepath, nrcolumns)
+
+    summary_metadata, rawdata = af.importing(filepath,nrcolumns)
     st.sidebar.dataframe(summary_metadata)
 
     st.sidebar.subheader('Defining analysis settings')
@@ -45,7 +24,7 @@ else:
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["Summary of all data", "Display individual well", "Configure plate conditions",
                                             "Configure statistical tests", "Export summary of analysis"])
     with tab1:
-        af.all_plotting(rawdata, threshold, number_of_wells)
+        af.all_plotting(rawdata,threshold)
         if st.checkbox("Display rawdata"):
             st.dataframe(data=rawdata['rawdata'])
 
@@ -76,3 +55,26 @@ else:
 
     with tab4:
         st.subheader('Defined layers')
+
+else:
+    st.title('To start, select a valid TTX file')
+    st.subheader("To exporting a valid TTX file from the FDSS Hamamatsu software, make sure to comply with the following settings:")
+
+    image = Image.open('settings.png')
+
+    st.image(image)
+    st.sidebar.write('\n')
+    st.sidebar.subheader('Important: due to an unsolved bug, the first attempt for uploading a file will not be successful. '
+                         'You must try a second time and upload the same file for proper data parsing.')
+    st.sidebar.write('\n')
+    st.sidebar.write('\n')
+    st.sidebar.write('\n')
+    st.sidebar.write('\n')
+
+    st.sidebar.subheader("Clear all Cache Data before analysing a new file")
+
+    if st.sidebar.button("Clear All Cache Data"):
+        # Clear values from *all* all in-memory and on-disk data caches:
+        st.cache_data.clear()
+        st.sidebar.write('Cache has been cleared')
+
