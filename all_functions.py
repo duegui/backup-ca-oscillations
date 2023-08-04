@@ -37,47 +37,47 @@ def importing(filepath, nrcolumns):
 @st.cache_data
 def all_plotting(rawdata,threshold):
     with st.spinner('Plotting your data. This might take up to 20 seconds...'):
+        with st.spinner('Estimating optimal threshold based on your data...'):
+
+            from plotly.subplots import make_subplots
+            wells = rawdata['wells']
+            well = 0
+
+            fig = make_subplots(
+                rows=8, cols=12, shared_xaxes=True, vertical_spacing=0.05,
+                subplot_titles=wells)
+
+            i, j = 1, 1
 
 
-        from plotly.subplots import make_subplots
-        wells = rawdata['wells']
-        well = 0
-
-        fig = make_subplots(
-            rows=8, cols=12, shared_xaxes=True, vertical_spacing=0.05,
-            subplot_titles=wells)
-
-        i, j = 1, 1
+            for well in wells:
 
 
-        for well in wells:
+                fig.add_trace(go.Scatter(x=rawdata['rawdata']['Time[min]'], y=rawdata['rawdata'][well], showlegend=False, name=well,
+                                         marker=dict(color='#3366CC')), row=j, col=i)
+
+                x = rawdata['rawdata']['Time[min]']
+                y = rawdata['rawdata'][well]
+
+                from scipy.signal import find_peaks
+
+                X = np.array(x.to_numpy())
+                Y = np.array(y.to_numpy())
+
+                peaks, properties = find_peaks(Y, prominence=threshold)
+
+                fig.add_trace(go.Scatter(mode='markers', x=x[peaks], y=Y[peaks], showlegend=False,
+                                         marker=dict(size=5, color='#EF553B', symbol='triangle-down')), row=j, col=i)
+
+                i += 1
+                if i == 13:
+                    i = 1
+                    j += 1
 
 
-            fig.add_trace(go.Scatter(x=rawdata['rawdata']['Time[min]'], y=rawdata['rawdata'][well], showlegend=False, name=well,
-                                     marker=dict(color='#3366CC')), row=j, col=i)
+            fig.update_layout(height=800, width=1400)
 
-            x = rawdata['rawdata']['Time[min]']
-            y = rawdata['rawdata'][well]
-
-            from scipy.signal import find_peaks
-
-            X = np.array(x.to_numpy())
-            Y = np.array(y.to_numpy())
-
-            peaks, properties = find_peaks(Y, prominence=threshold)
-
-            fig.add_trace(go.Scatter(mode='markers', x=x[peaks], y=Y[peaks], showlegend=False,
-                                     marker=dict(size=5, color='#EF553B', symbol='triangle-down')), row=j, col=i)
-
-            i += 1
-            if i == 13:
-                i = 1
-                j += 1
-
-
-        fig.update_layout(height=800, width=1400)
-
-        st.plotly_chart(fig)
+            st.plotly_chart(fig)
 
 
 
