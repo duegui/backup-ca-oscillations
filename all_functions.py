@@ -35,7 +35,7 @@ def importing(filepath, nrcolumns):
     return summary_metadata, rawdata_dict
 
 @st.cache_data
-def all_plotting(rawdata,threshold):
+def all_plotting(rawdata, threshold, number_of_wells):
     with st.spinner('Plotting your data. This might take up to 20 seconds...'):
         with st.spinner('Estimating optimal threshold based on your data...'):
 
@@ -43,8 +43,16 @@ def all_plotting(rawdata,threshold):
             wells = rawdata['wells']
             well = 0
 
+            if number_of_wells == 96:
+                rows = 8
+                cols = 12
+            else:
+                rows = 16
+                cols = 24
+
+
             fig = make_subplots(
-                rows=8, cols=12, shared_xaxes=True, vertical_spacing=0.05,
+                rows, cols, shared_xaxes=True, vertical_spacing=0.05,
                 subplot_titles=wells)
 
             i, j = 1, 1
