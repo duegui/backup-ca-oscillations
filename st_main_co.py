@@ -2,6 +2,8 @@ import streamlit as st
 import all_functions as af
 from PIL import Image
 
+st.write('testing new branch')
+
 st.set_page_config(page_title="Calcium oscillations analysis tool", layout="wide")
 st.sidebar.subheader('File upload')
 number_of_wells = st.sidebar.radio("Plate size", [96, 384], disabled=True, horizontal=True)
