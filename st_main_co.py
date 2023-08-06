@@ -34,7 +34,7 @@ else:
     else:
         nrcolumns = 386
     # nrcolumns will be main factor defining the behaviour of the app. Data will be visualized different
-    # for 384 well plates.
+    # for 384 well plates. This is a new test.
 
     summary_metadata, rawdata = af.importing(filepath, nrcolumns)
     st.sidebar.dataframe(summary_metadata)
