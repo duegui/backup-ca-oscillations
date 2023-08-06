@@ -5,6 +5,8 @@ from PIL import Image
 st.set_page_config(page_title="Calcium oscillations analysis tool", layout="wide")
 st.sidebar.subheader('File upload')
 number_of_wells = st.sidebar.radio("Plate size", [96, 384], disabled=True, horizontal=True)
+st.sidebar.caption('Currently, analysis is only possible on 96-well plates')
+st.sidebar.write('\n')
 filepath = st.sidebar.file_uploader('Please upload a valid TTX file')
 
 if filepath is None:
