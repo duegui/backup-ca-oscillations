@@ -59,7 +59,12 @@ def all_plotting96(rawdata, analysis_dict):
             X = np.array(x.to_numpy())
             Y = np.array(y.to_numpy())
 
-            peaks, properties = find_peaks(Y, prominence=analysis_dict[well]['Threshold'])
+            if analysis_dict[well]['Local threshold'] == None:
+                prominence_ = analysis_dict[well]['Global threshold']
+            else:
+                prominence_ = analysis_dict[well]['Local threshold']
+
+            peaks, properties = find_peaks(Y, prominence=prominence_)
 
             fig.add_trace(go.Scatter(mode='markers', x=x[peaks], y=Y[peaks], showlegend=False,
                                      marker=dict(size=5, color='#EF553B', symbol='triangle-down')), row=j, col=i)
@@ -177,7 +182,6 @@ def template(rows,columns):
     return df
 def add_condition_layer(selection_df):
     st.toast('Layer has been added', icon='🥳')
-
 @st.cache_data(experimental_allow_widgets=True)
 def custom_wells(rawdata):
     options = st.sidebar.multiselect('Set threshold manually for the following wells:', rawdata['wells'])

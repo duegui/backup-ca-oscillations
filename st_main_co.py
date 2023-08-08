@@ -27,6 +27,7 @@ with tab0:
             if st.button("Clear all Cache Data before analyzing a new file"):
                 # Clear values from *all* all in-memory and on-disk data caches:
                 st.cache_data.clear()
+                del st.session_state.analysis_dict
                 st.write('Cache has been cleared')
             st.write('\n')
             st.write('\n')
@@ -58,27 +59,27 @@ if filepath:
 
 
     st.sidebar.subheader('Define analysis settings')
-    threshold = st.sidebar.slider("Select a global detection threshold", min_value=0.01, max_value=0.1, value=0.02,
+    global_threshold = st.sidebar.slider("Select a global detection threshold", min_value=0.01, max_value=0.1, value=0.02,
                                   help='Recommended value 0.02', step=0.005, format="%f")
 
-    # DEFINING MAIN DICTIONARY FOR ANALYSIS RESULTS PER WELL
-    analysis_dict = dict.fromkeys(rawdata['wells'], None)
-
-    for key in analysis_dict:
-        analysis_dict[key] = {'Threshold': threshold}
-
+    # DEFINING MAIN DICTIONARY FOR ANALYSIS RESULTS PER WELL (SESSION STATE)
+    if 'analysis_dict' not in st.session_state:
+        st.session_state.analysis_dict = dict.fromkeys(rawdata['wells'], None)
+        for key in st.session_state.analysis_dict:
+            st.session_state.analysis_dict[key] = {'Global threshold': global_threshold, 'Local threshold': None}
 
     manualwells = af.custom_wells(rawdata)
 
-
-
     with tab1:
         if number_of_wells == 96:
-            af.all_plotting96(rawdata, analysis_dict)
+            af.all_plotting96(rawdata, st.session_state.analysis_dict)
 
         else:
             tab1a, tab2a, tab3a, tab4a = st.tabs(["Group 1", "Group 2", "Group 3", "Group 4"])
             af.all_plotting384(rawdata, threshold)
+
+        if st.button('Reset plots (for example, after individual threshold update)'):
+            af.all_plotting96(rawdata, st.session_state.analysis_dict)
 
     with tab0:
         if filepath:
@@ -97,15 +98,18 @@ if filepath:
 
         analysiswell = st.selectbox('Select well for manual threshold configuration', manualwells)
 
-        if analysiswell:
+        try:
             st.subheader('Plotting well ' + analysiswell)
 
-            specific_threshold = st.slider("Select a specific detection threshold for "+analysiswell,
-                                                                         min_value=0.01, max_value=0.1, value=0.02,
-                                                                         help='Recommended value 0.02', step=0.005, format="%f")
-            analysis_dict[analysiswell]['Threshold'] = specific_threshold
-            st.dataframe(analysis_dict)
-            af.well_plot(analysiswell, rawdata, analysis_dict[analysiswell]['Threshold'], summary_metadata)
+            local_threshold = st.slider("Select a specific detection threshold for "+analysiswell, min_value=0.01, max_value=0.1, value=0.02, step=0.005, format="%f")
+            st.session_state.analysis_dict[analysiswell]['Local threshold'] = local_threshold
+
+
+            af.well_plot(analysiswell, rawdata, st.session_state.analysis_dict[analysiswell]['Local threshold'], summary_metadata)
+        except:
+            st.write('No defined wells to analyze')
+
+        st.dataframe(st.session_state.analysis_dict)
 
 
     with tab3:
