@@ -22,7 +22,7 @@ with tab0:
         st.caption('Currently, the analysis is only enabled for 96-well plates')
         st.write('\n')
         filepath = st.file_uploader('Please upload a valid TTX file', type='TXT', help='To export a valid TXT file from the Hamamatsu FDSS software'
-                                                                                       'please follow the instructions described in the picture below')
+                                                                                       ' please follow the instructions described in the picture below')
         if not filepath:
             if st.button("Clear all Cache Data before analyzing a new file"):
                 # Clear values from *all* all in-memory and on-disk data caches:
@@ -47,15 +47,15 @@ if filepath:
     summary_metadata, rawdata = af.importing(filepath, nr_columns)
 
 
-    # # Configuring sidebar
-    # @st.cache_data #a loader... just deco, probably useless
-    # def loadingpf():
-    #     with st.sidebar.empty():
-    #         for seconds in range(5):
-    #             st.write(f"⏳ Please, wait while your file is being uploaded...")
-    #             time.sleep(1)
-    #         st.write(f"✔️{summary_metadata['File_name']} is ready!")
-    # loadingpf()
+    # Configuring sidebar
+    @st.cache_data #a loader... just deco, probably useless
+    def loadingpf():
+        with st.sidebar.empty():
+            for seconds in range(5):
+                st.write(f"⏳ Please, wait while your file is being uploaded...")
+                time.sleep(1)
+            st.write(f"✔️{summary_metadata['File_name']} is ready!")
+    loadingpf()
 
 
     st.sidebar.subheader('Define analysis settings')
@@ -78,8 +78,8 @@ if filepath:
             tab1a, tab2a, tab3a, tab4a = st.tabs(["Group 1", "Group 2", "Group 3", "Group 4"])
             af.all_plotting384(rawdata, threshold)
 
-        if st.button('Reset plots (for example, after individual threshold update)'):
-            af.all_plotting96(rawdata, st.session_state.analysis_dict)
+        # if st.button('Reset plots (for example, after individual threshold update)'):
+        #     af.all_plotting96(rawdata, st.session_state.analysis_dict)
 
     with tab0:
         if filepath:
@@ -106,6 +106,8 @@ if filepath:
 
 
             af.well_plot(analysiswell, rawdata, st.session_state.analysis_dict[analysiswell]['Local threshold'], summary_metadata)
+
+
         except:
             st.write('No defined wells to analyze')
 

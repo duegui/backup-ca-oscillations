@@ -3,6 +3,8 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import scipy as sp
+
 @st.cache_data
 def importing(filepath, nrcolumns):
     # Generate column names
@@ -81,6 +83,9 @@ def all_plotting96(rawdata, analysis_dict):
 
         st.plotly_chart(fig)
     return fig
+
+
+#all_plotting384
 # @st.cache_data(experimental_allow_widgets=True)
 # def all_plotting384(rawdata, threshold):
 #
@@ -136,25 +141,31 @@ def well_plot(analysiswell, rawdata, threshold, summary_metadata):
     fig2 = px.line(rawdata['rawdata'], x, y, width=1300, height=700,
                    labels={"Time[min]_int": "Time (minutes)", analysiswell: "Ratio"})
     fig2.update_xaxes(rangeslider_visible=True)
-
     fig2.add_vline(x=summary_metadata['Marker_int'], line_width=3, line_dash="dash", line_color="green")
 
-    from scipy.signal import find_peaks
+    #creating numpy arrays for trace analysis
+    npx= np.array(x.to_numpy())
+    npy = np.array(y.to_numpy())
+    npy_threshold = npy+(threshold-0.01)
 
-    X = np.array(x.to_numpy())
-    Y = np.array(y.to_numpy())
+    peaks, properties = sp.signal.find_peaks(npy, prominence=threshold)
 
-    peaks, properties = find_peaks(Y, prominence=threshold)
+    fig2.add_trace(go.Scatter(mode='markers', x=npx[peaks], y=npy[peaks],
+                              marker=dict(size=10, color='#EF553B', symbol='triangle-down'), name='Detected Peaks'))
 
-    fig2.add_trace(go.Scatter(mode='markers', x=x[peaks], y=Y[peaks], marker=dict(
-        size=10,
-        color='#EF553B',
-        symbol='triangle-down'
-    ), name='Detected Peaks'))
+    #create lowpass filter, apply, add to figure
+    b, a = sp.signal.butter(3, 0.04)
+    npy_threshold_filtered = sp.signal.filtfilt(b, a, npy_threshold)
+
+    fig2.add_trace(go.Scatter(x=npx, y=npy_threshold_filtered, mode='lines',
+                              name = "Current defined threshold: "+str(threshold),
+                              line=go.scatter.Line(color="orange", width=2), showlegend=True))
 
     st.plotly_chart(fig2)
 
     return fig2
+
+
 def template(rows,columns):
     # Creating list of letters
     list_letters = []
